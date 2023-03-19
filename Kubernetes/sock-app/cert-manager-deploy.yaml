@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+spec:
+  selector:
+    matchLabels:
+      app: cert-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cert-manager
+    spec:
+      serviceAccountName: cert-manager
+      containers:
+        - name: cert-manager
+          image: quay.io/jetstack/cert-manager-controller:v1.5.4
+          args:
+            - --webhook-v2=true
+          volumeMounts:
+            - name: webhook-certs
+              mountPath: /tmp/k8s-webhook-server/serving-certs
+          ports:
+            - name: http
+              containerPort: 9402
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 1
+      volumes:
+        - name: webhook-certs
+          secret:
+            secretName: cert-manager-webhook-tls

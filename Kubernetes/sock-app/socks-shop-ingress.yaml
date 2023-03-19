@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sock-shop
+  namespace: sock-shop
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  tls:
+  - hosts:
+    - app.webfowokeoluwole.live
+    secretName: sock-shop-tls
+  rules:
+  - host: webfowokeoluwole.live
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: sock-shop
+            port:
+              name: http
